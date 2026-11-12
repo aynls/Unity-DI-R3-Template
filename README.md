@@ -1,104 +1,32 @@
-# DI-R3 Template
+# Unity DI-R3 Template
 
-Unity 6 中小型独立游戏模板。项目以 VContainer 作为唯一组合根，以 UniTask 表达可取消的异步流程，以 R3 暴露状态变化，并通过 Addressables 管理 UI 与音频资源。
+面向中小型独立游戏的 Unity 6 工程模板，采用 URP 2D。示例场景把首次启动、语言选择、主菜单和设置页串在一起，可以从这条流程开始接入自己的玩法。
 
-当前编辑器版本：`6000.3.5f2`。模板产品名为 `DI-R3 Template`，接入具体游戏时应同步修改 Player Settings 中的公司名、产品名与平台标识符。
+## 运行示例
 
-## 主要能力
+1. 安装 Git 和 Unity `6000.3.5f2`，克隆仓库。编辑器版本以 [ProjectVersion.txt](ProjectSettings/ProjectVersion.txt) 为准。
 
-- 显式启动链：设置、本地化、显示/音频应用和首页面路由均可等待、可取消。
-- 设置与存档：不可变设置快照、独立 Repository、schema version、损坏文件回退和原子写入。
-- 本地化：支持 `en`、`zh-Hans`、`ja`，保存 Locale，首次启动才进入语言选择页。
-- UI 导航：串行 Push/Pop/Replace/Clear、失败回滚、页面生命周期 CancellationToken 和 Addressables lease。
-- 音频：Music/SFX 分离接口、Addressable Clip 缓存、latest-command-wins BGM 转场和 AudioMixer 音量。
-- 作者门禁：UIBinder 校验、Audio Catalog freshness、Addressable Keys freshness、Packed Addressables 与 Windows Player 构建入口。
+   ```bash
+   git clone https://github.com/shezchen/Unity-DI-R3-Template.git
+   ```
 
-## 运行时结构
+2. 在 Unity Hub 中打开克隆后的项目目录，等待依赖下载、资源导入和脚本编译完成。
+3. 打开 [SampleScene](Assets/Scenes/SampleScene.unity)，进入 Play Mode。首次启动可以选择简体中文、英语或日语。确认语言后，按任意键打开主菜单，再进入设置页调整分辨率、全屏模式、音乐和音效音量。再次启动时会恢复已保存的语言和设置。
 
-```text
-Assets/Scripts/
-├─ Architecture/
-│  ├─ DependencyInjection/   # ProjectLifetimeScope 组合根
-│  ├─ GameFlow/              # 启动编排
-│  ├─ Data/                  # Settings、GameSave、Persistence
-│  ├─ GameSound/             # Audio contracts、players、output、clip store
-│  └─ Language/              # Localization contracts 与实现
-├─ UI/
-│  ├─ Navigation/            # Navigator、PageStack、Prefab lease
-│  └─ Page/                  # 页面与 UIBinder
-├─ Tools/                    # 有真实调用方的运行时扩展
-└─ Generated/                # 禁止手改的生成常量
-```
+## 模板提供的模块
 
-`ProjectLifetimeScope` 是默认的唯一组合根。运行时不使用全局 EventBus、Service Locator 或第二套单例系统；需要结果和顺序的操作通过接口直接调用。
+| 模块 | 用途 |
+| --- | --- |
+| 启动与依赖注入 | `ProjectLifetimeScope` 用 VContainer 注册服务和场景组件，`GameFlowController` 用 UniTask 编排可取消的启动流程。 |
+| 页面导航 | uGUI 页面通过 Addressables 加载并由 VContainer 实例化。导航栈支持 Push、Pop、Replace 和 Clear，页面过渡使用 DOTween。 |
+| 设置与存档 | 设置通过 R3 发布已保存的状态变化。设置和游戏存档分别写入本地 JSON，支持原子写入与备份恢复。玩法可通过 `IGameSaveService` 接入槽位存档。 |
+| 本地化 | Unity Localization 管理语言、文本和资源表，启动时应用已保存的语言。 |
+| 音频 | BGM 支持淡入淡出，SFX 支持重叠播放，AudioMixer 独立控制两路音量。示例附带点击音效。[音频接入指南](Assets/Doc/GameSound.md) |
 
-## 最小用法
+## 接入自己的游戏
 
-页面导航：
+在 [ProjectLifetimeScope](Assets/Scripts/Architecture/DependencyInjection/ProjectLifetimeScope.cs) 注册应用服务，通过 [GameFlowController](Assets/Scripts/Architecture/GameFlow/GameFlowController.cs) 接入启动流程。从 [页面脚本](Assets/Scripts/UI/Page) 和 [示例 Prefab](Assets/Prefab) 可以查看页面如何绑定控件、响应输入和切换界面。
 
-```csharp
-var result = await navigator.PushAsync<SettingsPage>(
-    AddressableKeys.Assets.SettingsPagePrefab,
-    cancellationToken);
-```
+## 构建 Windows 版本
 
-播放音频：
-
-```csharp
-var music = await musicPlayer.PlayAsync(
-    new MusicCueId(musicCueId),
-    MusicTransition.Default,
-    cancellationToken);
-
-var sfx = await sfxPlayer.PlayAsync(
-    new SfxCueId(AudioClipName.SFX.ClickSound),
-    cancellationToken: cancellationToken);
-```
-
-`musicCueId` 使用项目添加并生成后的 Music cue ID。
-
-修改设置：
-
-```csharp
-var result = settingsService.SetMusicVolume(80);
-var snapshot = settingsService.Current;
-```
-
-## Editor 菜单
-
-- `Tools/Template/UI/Validate UIBinders`
-- `Tools/Template/Audio/Validate Catalog Freshness`
-- `Tools/Template/Code Generation/Generate Addressable Keys`
-- `Tools/Template/Code Generation/Validate Addressable Keys`
-- `Tools/Template/Code Generation/Validate Generated Code`
-- `Tools/Template/Build/Packed Addressables`
-- `Tools/Template/Build/Windows Player`
-- `Tools/Template/Build/Packed Addressables + Windows Player`
-
-Player Build 前会自动执行 UIBinder、Audio Catalog 与生成文件 freshness 检查。
-
-## 资源约定
-
-- UI Prefab 由 `IUiPrefabProvider` 加载，并由 `IObjectResolver.Instantiate` 实例化以完成 VContainer 注入。
-- UIBinder 对象使用 `Button_`、`Text_`、`Image_`、`Slider_`、`Toggle_`、`Input_`、`Panel_`、`Object_` 前缀。
-- AudioClip 放入 `Assets/Audio/BGM` 或 `Assets/Audio/SFX`，标记为 Addressable 后再生成 Audio Catalog。
-- `AddressableKeys.cs` 与 `AudioClipName.cs` 是生成文件，不应手工编辑。
-
-## Dependencies
-
-- VContainer
-- R3
-- UniTask
-- DOTween
-- Unity Addressables
-- Unity Localization
-- Unity Input System
-- URP 2D
-
-第一方运行时代码不依赖 Odin Inspector。当前第一方代码保持在 `Assembly-CSharp`；项目暂不引入模块 asmdef。
-
-项目不包含第一方单元测试、测试场景或手工测试组件；这是当前模板的明确范围，而不是待补齐项。
-
-## Verification
-
-项目只接受 Unity Editor/Player 构建结果作为编译证据，不使用普通 `dotnet build` 验证 Unity 工程。完整手工流程见 [REFACTORING_PLAN.md](REFACTORING_PLAN.md)。
+在 Unity 的 **Build Profiles** 中切换到 Windows x64，然后运行 **Tools > Template > Build > Packed Addressables + Windows Player**。构建时会检查 UIBinder 绑定、Audio Catalog 和生成的资源常量，产物位于 `Builds/Windows/DI-R3-Template.exe`。
