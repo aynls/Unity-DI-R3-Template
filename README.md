@@ -7,7 +7,7 @@
 1. 安装 Git 和 Unity `6000.3.5f2`，克隆仓库。编辑器版本以 [ProjectVersion.txt](ProjectSettings/ProjectVersion.txt) 为准。
 
    ```bash
-   git clone https://github.com/shezchen/Unity-DI-R3-Template.git
+   git clone https://github.com/aynls/Unity-DI-R3-Template.git
    ```
 
 2. 在 Unity Hub 中打开克隆后的项目目录，等待依赖下载、资源导入和脚本编译完成。
