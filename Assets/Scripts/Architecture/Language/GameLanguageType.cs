@@ -2,11 +2,11 @@ using System;
 
 namespace Architecture
 {
-    [Serializable]
-    public enum GameLanguageType
-    {
-        Chinese,
-        English,
-        Japanese
-    }
+  [Serializable]
+  public enum GameLanguageType
+  {
+    Chinese,
+    English,
+    Japanese
+  }
 }

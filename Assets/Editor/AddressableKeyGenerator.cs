@@ -42,7 +42,7 @@ namespace Template.Editor.CodeGeneration
             Debug.Log("[CodeGeneration] Addressable keys validation passed.");
         }
 
-        internal static string BuildExpectedContentOrThrow()
+        public static string BuildExpectedContentOrThrow()
         {
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)

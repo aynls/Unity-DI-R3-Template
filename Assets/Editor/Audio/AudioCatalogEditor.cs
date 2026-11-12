@@ -48,7 +48,7 @@ namespace Template.Editor.Audio
             }
         }
 
-        internal static void Generate(AudioCatalog catalog)
+        public static void Generate(AudioCatalog catalog)
         {
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)
@@ -88,7 +88,7 @@ namespace Template.Editor.Audio
             Debug.Log($"[AudioCatalog] Generated {bgm.Count} Music and {sfx.Count} SFX entries.");
         }
 
-        internal static bool Validate(AudioCatalog catalog, bool logSuccess)
+        public static bool Validate(AudioCatalog catalog, bool logSuccess)
         {
             if (catalog == null)
             {

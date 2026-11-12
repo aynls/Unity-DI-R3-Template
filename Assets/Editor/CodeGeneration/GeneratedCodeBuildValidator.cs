@@ -17,7 +17,7 @@ namespace Template.Editor.CodeGeneration
         }
     }
 
-    internal sealed class GeneratedCodeBuildValidator : IPreprocessBuildWithReport
+    public sealed class GeneratedCodeBuildValidator : IPreprocessBuildWithReport
     {
         public int callbackOrder => -1000;
 

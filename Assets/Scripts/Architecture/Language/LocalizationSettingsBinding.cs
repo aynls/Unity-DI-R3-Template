@@ -5,33 +5,29 @@ using Cysharp.Threading.Tasks;
 
 namespace Architecture
 {
-    public sealed class LocalizationSettingsBinding
+  public sealed class LocalizationSettingsBinding
+  {
+    private readonly ILanguageService _language;
+    private readonly ISettingsService _settings;
+
+    public LocalizationSettingsBinding(ISettingsService settings, ILanguageService language)
     {
-        private readonly ISettingsService _settings;
-        private readonly ILanguageService _language;
-
-        public LocalizationSettingsBinding(ISettingsService settings, ILanguageService language)
-        {
-            _settings = settings;
-            _language = language;
-        }
-
-        public UniTask<LanguageOperationResult> ApplyCurrentAsync(
-            CancellationToken cancellationToken = default)
-        {
-            if (!_settings.IsInitialized)
-            {
-                throw new InvalidOperationException(
-                    "[LocalizationSettingsBinding] Settings must be initialized before applying locale.");
-            }
-
-            if (!_language.IsInitialized)
-            {
-                throw new InvalidOperationException(
-                    "[LocalizationSettingsBinding] Language service must be initialized before applying locale.");
-            }
-
-            return _language.SetLanguageAsync(_settings.Current.Language, cancellationToken);
-        }
+      _settings = settings;
+      _language = language;
     }
+
+    public UniTask<LanguageOperationResult> ApplyCurrentAsync(
+      CancellationToken cancellationToken = default)
+    {
+      if (!_settings.IsInitialized)
+        throw new InvalidOperationException(
+          "[LocalizationSettingsBinding] Settings must be initialized before applying locale.");
+
+      if (!_language.IsInitialized)
+        throw new InvalidOperationException(
+          "[LocalizationSettingsBinding] Language service must be initialized before applying locale.");
+
+      return _language.SetLanguageAsync(_settings.Current.Language, cancellationToken);
+    }
+  }
 }

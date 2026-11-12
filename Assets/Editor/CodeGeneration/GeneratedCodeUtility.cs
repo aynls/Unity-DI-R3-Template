@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Template.Editor.CodeGeneration
 {
-    internal sealed class GeneratedConstant
+    public sealed class GeneratedConstant
     {
         public GeneratedConstant(string identifier, string value)
         {
@@ -19,7 +19,7 @@ namespace Template.Editor.CodeGeneration
         public string Value { get; }
     }
 
-    internal static class GeneratedCodeUtility
+    public static class GeneratedCodeUtility
     {
         private static readonly HashSet<string> CSharpKeywords = new(StringComparer.Ordinal)
         {
@@ -102,7 +102,7 @@ namespace Template.Editor.CodeGeneration
                 Directory.CreateDirectory(directory);
             }
 
-            File.WriteAllText(path, content, new UTF8Encoding(false));
+            File.WriteAllText(path, NormalizeLineEndings(content), new UTF8Encoding(false));
             return true;
         }
 
