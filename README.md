@@ -22,7 +22,7 @@ Unity `6000.3.x` · URP 2D · VContainer · R3 · UniTask · MessagePipe · DOTw
 
 ## 开始
 
-1. `git clone https://github.com/shezchen/Unity-DI-R3-Template.git`
+1. `git clone https://github.com/aynls/Unity-DI-R3-Template.git`
 2. Unity Hub 打开目录（编辑器版本以 [ProjectVersion.txt](ProjectSettings/ProjectVersion.txt) 为准），等待导入与编译。
 3. 在 [ProjectLifetimeScope](Assets/Scripts/Architecture/DependencyInjection/ProjectLifetimeScope.cs) 注册你的服务，从 [页面控制器](Assets/Scripts/UI/Page) 与 [Assets/UI](Assets/UI) 的 UXML/USS 开始搭界面。
 
