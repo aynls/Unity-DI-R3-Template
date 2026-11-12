@@ -1,0 +1,159 @@
+.page-view {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  color: rgb(244, 246, 249);
+  font-size: 24px;
+}
+
+.font-english {
+  -unity-font-definition: url("project://database/Assets/UI/Fonts/NotoSans.asset");
+}
+
+.font-chinese {
+  -unity-font-definition: url("project://database/Assets/UI/Fonts/NotoSansSC.asset");
+}
+
+.font-japanese {
+  -unity-font-definition: url("project://database/Assets/UI/Fonts/NotoSansJP.asset");
+}
+
+.menu-page {
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.menu-prompt {
+  font-size: 54px;
+  -unity-text-align: middle-center;
+  white-space: normal;
+  margin-bottom: 24px;
+}
+
+.intro-slide {
+  transition-duration: 1s;
+  transition-timing-function: ease-out;
+}
+
+.intro-slide.is-transparent {
+  translate: -150px 0;
+}
+
+.intro-exit {
+  opacity: 0;
+  translate: 150px 0;
+}
+
+.page-fade {
+  transition-duration: 0.5s;
+}
+
+.menu-reveal {
+  transition-duration: 1s;
+}
+
+.menu-list {
+  width: 520px;
+  max-width: 100%;
+}
+
+.language-choices {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.menu-button {
+  height: 68px;
+  margin: 6px;
+  border-width: 0;
+  border-radius: 0;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: url("project://database/Assets/Art/UI/蓝色渐变矩形.png");
+  color: rgb(244, 246, 249);
+  font-size: 28px;
+  justify-content: center;
+}
+
+.menu-button:hover,
+.menu-button:focus {
+  border-width: 0;
+  background-color: rgba(0, 0, 0, 0);
+  color: rgb(244, 246, 249);
+}
+
+.menu-button:active {
+  -unity-background-image-tint-color: rgb(204, 218, 232);
+}
+
+.language-choices .menu-button {
+  width: 240px;
+}
+
+.menu-icon {
+  position: absolute;
+  left: 36px;
+  top: 18px;
+  width: 32px;
+  height: 32px;
+  -unity-background-scale-mode: scale-to-fit;
+}
+
+.start-icon {
+  background-image: url("project://database/Assets/Art/UI/开始.png");
+}
+
+.settings-icon {
+  background-image: url("project://database/Assets/Art/UI/嵌齿轮.png");
+}
+
+.quit-icon {
+  background-image: url("project://database/Assets/Art/UI/退出.png");
+}
+
+.settings-panel {
+  width: 780px;
+  max-width: 100%;
+  padding: 32px;
+  background-color: rgb(23, 29, 39);
+  border-radius: 12px;
+}
+
+.settings-row {
+  flex-direction: row;
+  align-items: center;
+  min-height: 54px;
+  margin-bottom: 12px;
+}
+
+.setting-label {
+  width: 42%;
+  flex-shrink: 0;
+  white-space: normal;
+}
+
+.setting-input {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.setting-value {
+  width: 56px;
+  -unity-text-align: middle-right;
+}
+
+.settings-panel .menu-button {
+  margin-top: 18px;
+}
+
+.is-transparent {
+  opacity: 0;
+}
+
+.is-hidden {
+  display: none;
+}

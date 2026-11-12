@@ -157,7 +157,7 @@ Transform:
   m_GameObject: {fileID: 225012943}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1541.8547, y: 1052.0195, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -330,7 +330,7 @@ Transform:
   m_GameObject: {fileID: 900833314}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1920, y: 1080, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -406,6 +406,7 @@ GameObject:
   m_Component:
   - component: {fileID: 937922712}
   - component: {fileID: 937922713}
+  - component: {fileID: 937922714}
   m_Layer: 0
   m_Name: UIRoot
   m_TagString: Untagged
@@ -422,7 +423,7 @@ Transform:
   m_GameObject: {fileID: 937922710}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1541.8547, y: 1052.0195, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -440,6 +441,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f2b55b697414bad8306fad67672abf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Architecture.UIRoot
+  languagePage: {fileID: 9197481963319205126, guid: 12de1ca8866af5a41b989e41897a006e, type: 3}
+  mainScenePage: {fileID: 9197481963319205126, guid: b5e6d8099e396bd4199e03b9c7ed42b3, type: 3}
+  settingsPage: {fileID: 9197481963319205126, guid: e0e64885ad18c044f9a94800e67ba6b7, type: 3}
+--- !u!114 &937922714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 937922710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 7945089f31b3efc458fb2a342dc79c98, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 0}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1 &2037829905
 GameObject:
   m_ObjectHideFlags: 0
@@ -502,7 +529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_FirstSelected: {fileID: 0}
-  m_sendNavigationEvents: 1
+  m_sendNavigationEvents: 0
   m_DragThreshold: 10
 --- !u!4 &2037829908
 Transform:
@@ -513,7 +540,7 @@ Transform:
   m_GameObject: {fileID: 2037829905}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1920, y: -1080, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -538,11 +565,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3837675438801215901, guid: b05c781807a0351449e06c26945c7e44, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1920
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3837675438801215901, guid: b05c781807a0351449e06c26945c7e44, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1080
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3837675438801215901, guid: b05c781807a0351449e06c26945c7e44, type: 3}
       propertyPath: m_LocalPosition.z

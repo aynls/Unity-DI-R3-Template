@@ -4,311 +4,165 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
-using VContainer.Unity;
 
 namespace UI
 {
-    public sealed class PageStack
+  public sealed class PageStack
+  {
+    private readonly List<BasePage> _entries = new();
+    private readonly IObjectResolver _resolver;
+    private readonly UIRoot _uiRoot;
+
+    public PageStack(IObjectResolver resolver, UIRoot uiRoot)
     {
-        private sealed class PageEntry
-        {
-            private readonly CancellationTokenSource _lifetime = new();
-            private bool _isDisposed;
-
-            public PageEntry(GameObject gameObject, IBasePage page, UiPrefabLease prefabLease)
-            {
-                GameObject = gameObject;
-                Page = page;
-                PrefabLease = prefabLease;
-            }
-
-            public GameObject GameObject { get; }
-            public IBasePage Page { get; }
-            public UiPrefabLease PrefabLease { get; }
-            public string Key => PrefabLease.Key;
-            public CancellationToken LifetimeToken => _lifetime.Token;
-
-            public void DisposeImmediately()
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
-                _isDisposed = true;
-                _lifetime.Cancel();
-
-                if (GameObject != null)
-                {
-                    if (Application.isPlaying)
-                    {
-                        UnityEngine.Object.Destroy(GameObject);
-                    }
-                    else
-                    {
-                        UnityEngine.Object.DestroyImmediate(GameObject);
-                    }
-                }
-
-                PrefabLease.Dispose();
-                _lifetime.Dispose();
-            }
-        }
-
-        private readonly List<PageEntry> _entries = new();
-        private readonly IObjectResolver _resolver;
-        private readonly Transform _uiRoot;
-
-        public PageStack(IObjectResolver resolver, UIRoot uiRoot)
-        {
-            _resolver = resolver;
-            _uiRoot = uiRoot.transform;
-        }
-
-        public int Count => _entries.Count;
-        public IBasePage Top => Count == 0 ? null : _entries[Count - 1].Page;
-
-        public bool IsTop<TPage>(string key, out TPage page) where TPage : MonoBehaviour, IBasePage
-        {
-            if (Count > 0 &&
-                _entries[Count - 1].Key == key &&
-                _entries[Count - 1].Page is TPage typedPage)
-            {
-                page = typedPage;
-                return true;
-            }
-
-            page = null;
-            return false;
-        }
-
-        public async UniTask<NavigationResult<TPage>> PushAsync<TPage>(UiPrefabLease prefabLease)
-            where TPage : MonoBehaviour, IBasePage
-        {
-            var creation = CreateEntry<TPage>(prefabLease);
-            if (creation.Entry == null)
-            {
-                return new NavigationResult<TPage>(creation.Status, null, creation.Error);
-            }
-
-            var entry = creation.Entry;
-            var previous = Count > 0 ? _entries[Count - 1] : null;
-
-            if (previous != null)
-            {
-                var pauseError = await InvokeLifecycleAsync(
-                    () => previous.Page.OnPause(previous.LifetimeToken),
-                    "pause current page");
-                if (pauseError != null)
-                {
-                    entry.DisposeImmediately();
-                    await TryResumeAsync(previous);
-                    return new NavigationResult<TPage>(NavigationStatus.LifecycleFailed, null, pauseError);
-                }
-            }
-
-            _entries.Add(entry);
-            entry.GameObject.SetActive(true);
-
-            var enterError = await InvokeLifecycleAsync(
-                () => entry.Page.OnEnter(entry.LifetimeToken),
-                "enter new page");
-            if (enterError != null)
-            {
-                _entries.Remove(entry);
-                entry.DisposeImmediately();
-                var resumeError = await TryResumeAsync(previous);
-                return new NavigationResult<TPage>(
-                    NavigationStatus.LifecycleFailed,
-                    null,
-                    CombineErrors(enterError, resumeError));
-            }
-
-            return new NavigationResult<TPage>(NavigationStatus.Succeeded, (TPage)entry.Page);
-        }
-
-        public async UniTask<NavigationResult<TPage>> ReplaceAsync<TPage>(UiPrefabLease prefabLease)
-            where TPage : MonoBehaviour, IBasePage
-        {
-            if (Count == 0)
-            {
-                return await PushAsync<TPage>(prefabLease);
-            }
-
-            var creation = CreateEntry<TPage>(prefabLease);
-            if (creation.Entry == null)
-            {
-                return new NavigationResult<TPage>(creation.Status, null, creation.Error);
-            }
-
-            var entry = creation.Entry;
-            var previous = _entries[Count - 1];
-            var pauseError = await InvokeLifecycleAsync(
-                () => previous.Page.OnPause(previous.LifetimeToken),
-                "pause replaced page");
-            if (pauseError != null)
-            {
-                entry.DisposeImmediately();
-                await TryResumeAsync(previous);
-                return new NavigationResult<TPage>(NavigationStatus.LifecycleFailed, null, pauseError);
-            }
-
-            _entries.Add(entry);
-            entry.GameObject.SetActive(true);
-            var enterError = await InvokeLifecycleAsync(
-                () => entry.Page.OnEnter(entry.LifetimeToken),
-                "enter replacement page");
-            if (enterError != null)
-            {
-                _entries.Remove(entry);
-                entry.DisposeImmediately();
-                var resumeError = await TryResumeAsync(previous);
-                return new NavigationResult<TPage>(
-                    NavigationStatus.LifecycleFailed,
-                    null,
-                    CombineErrors(enterError, resumeError));
-            }
-
-            _entries.Remove(previous);
-            var exitError = await InvokeLifecycleAsync(
-                () => previous.Page.OnExit(previous.LifetimeToken),
-                "exit replaced page");
-            previous.DisposeImmediately();
-            if (exitError != null)
-            {
-                Debug.LogError($"[PageStack] Replacement succeeded, but old page cleanup failed: {exitError}");
-            }
-
-            return new NavigationResult<TPage>(NavigationStatus.Succeeded, (TPage)entry.Page);
-        }
-
-        public async UniTask<NavigationResult> PopAsync()
-        {
-            if (Count == 0)
-            {
-                return NavigationResult.Failure(NavigationStatus.Empty, "Page stack is empty.");
-            }
-
-            var top = _entries[Count - 1];
-            _entries.RemoveAt(Count - 1);
-            var exitError = await InvokeLifecycleAsync(
-                () => top.Page.OnExit(top.LifetimeToken),
-                "exit top page");
-            top.DisposeImmediately();
-
-            var resumeError = Count > 0 ? await TryResumeAsync(_entries[Count - 1]) : null;
-            var error = CombineErrors(exitError, resumeError);
-            return error == null
-                ? NavigationResult.Success()
-                : NavigationResult.Failure(NavigationStatus.LifecycleFailed, error);
-        }
-
-        public async UniTask<NavigationResult> ClearAsync()
-        {
-            string error = null;
-            while (Count > 0)
-            {
-                var top = _entries[Count - 1];
-                _entries.RemoveAt(Count - 1);
-                error = CombineErrors(
-                    error,
-                    await InvokeLifecycleAsync(
-                        () => top.Page.OnExit(top.LifetimeToken),
-                        "exit page during clear"));
-                top.DisposeImmediately();
-            }
-
-            return error == null
-                ? NavigationResult.Success()
-                : NavigationResult.Failure(NavigationStatus.LifecycleFailed, error);
-        }
-
-        public void ClearImmediately()
-        {
-            for (var index = _entries.Count - 1; index >= 0; index--)
-            {
-                _entries[index].DisposeImmediately();
-            }
-
-            _entries.Clear();
-        }
-
-        private (PageEntry Entry, NavigationStatus Status, string Error) CreateEntry<TPage>(
-            UiPrefabLease prefabLease) where TPage : MonoBehaviour, IBasePage
-        {
-            GameObject instance = null;
-            try
-            {
-                instance = _resolver.Instantiate(prefabLease.Prefab, _uiRoot);
-                instance.SetActive(false);
-                var page = instance.GetComponent<TPage>();
-                if (page == null)
-                {
-                    DestroyUnownedInstance(instance);
-                    prefabLease.Dispose();
-                    return (null, NavigationStatus.InvalidPage,
-                        $"Prefab '{prefabLease.Key}' does not contain {typeof(TPage).Name}.");
-                }
-
-                return (new PageEntry(instance, page, prefabLease), NavigationStatus.Succeeded, null);
-            }
-            catch (Exception exception)
-            {
-                DestroyUnownedInstance(instance);
-                prefabLease.Dispose();
-                return (null, NavigationStatus.LifecycleFailed, exception.Message);
-            }
-        }
-
-        private static async UniTask<string> TryResumeAsync(PageEntry entry)
-        {
-            if (entry == null)
-            {
-                return null;
-            }
-
-            return await InvokeLifecycleAsync(
-                () => entry.Page.OnResume(entry.LifetimeToken),
-                "resume previous page");
-        }
-
-        private static async UniTask<string> InvokeLifecycleAsync(
-            Func<UniTask> operation,
-            string operationName)
-        {
-            try
-            {
-                await operation();
-                return null;
-            }
-            catch (Exception exception)
-            {
-                return $"Failed to {operationName}: {exception.Message}";
-            }
-        }
-
-        private static string CombineErrors(string first, string second)
-        {
-            if (string.IsNullOrEmpty(first)) return second;
-            if (string.IsNullOrEmpty(second)) return first;
-            return first + " | " + second;
-        }
-
-        private static void DestroyUnownedInstance(GameObject instance)
-        {
-            if (instance == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                UnityEngine.Object.Destroy(instance);
-            }
-            else
-            {
-                UnityEngine.Object.DestroyImmediate(instance);
-            }
-        }
+      _resolver = resolver;
+      _uiRoot = uiRoot;
     }
+
+    private BasePage Top => _entries.Count == 0 ? null : _entries[^1];
+
+    public UniTask<NavigationResult> PushAsync<TPage>(CancellationToken cancellationToken)
+      where TPage : BasePage
+    {
+      return OpenAsync<TPage>(false, cancellationToken);
+    }
+
+    public UniTask<NavigationResult> ReplaceAsync<TPage>(CancellationToken cancellationToken)
+      where TPage : BasePage
+    {
+      return OpenAsync<TPage>(true, cancellationToken);
+    }
+
+    private async UniTask<NavigationResult> OpenAsync<TPage>(
+      bool replace,
+      CancellationToken cancellationToken) where TPage : BasePage
+    {
+      var previous = Top;
+      if (previous is TPage) return new NavigationResult(NavigationStatus.AlreadyCurrent);
+
+      var template = _uiRoot.GetTemplate(typeof(TPage));
+      if (template == null)
+        return NavigationResult.Failure(
+          NavigationStatus.InvalidPage, $"No UXML template assigned for {typeof(TPage).Name}.");
+
+      BasePage page = null;
+      try
+      {
+        page = _resolver.Resolve<TPage>();
+        page.Initialize(template.Instantiate());
+      }
+      catch (Exception exception)
+      {
+        page?.Dispose();
+        return NavigationResult.Failure(
+          NavigationStatus.InvalidPage, $"Cannot create {typeof(TPage).Name}: {exception}");
+      }
+
+      try
+      {
+        if (previous != null) await previous.OnPause(cancellationToken);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        _uiRoot.Mount(page.View);
+        await page.OnEnter(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        _entries.Add(page);
+      }
+      catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+      {
+        page.Dispose();
+        throw;
+      }
+      catch (Exception exception)
+      {
+        page.Dispose();
+        var resumeError = await ResumeAsync(previous, cancellationToken);
+        return NavigationResult.Failure(NavigationStatus.LifecycleFailed,
+          CombineErrors($"Cannot enter {typeof(TPage).Name}: {exception}", resumeError));
+      }
+
+      if (replace && previous != null)
+      {
+        _entries.Remove(previous);
+        var exitError = await ExitAsync(previous, cancellationToken);
+        if (exitError != null) Debug.LogError($"[PageStack] Replacement succeeded. {exitError}");
+      }
+
+      return NavigationResult.Success();
+    }
+
+    public async UniTask<NavigationResult> PopAsync(CancellationToken cancellationToken)
+    {
+      var page = Top;
+      if (page == null) return NavigationResult.Failure(NavigationStatus.Empty, "Page stack is empty.");
+
+      _entries.RemoveAt(_entries.Count - 1);
+      var exitError = await ExitAsync(page, cancellationToken);
+      var resumeError = await ResumeAsync(Top, cancellationToken);
+      return ToResult(CombineErrors(exitError, resumeError));
+    }
+
+    public async UniTask<NavigationResult> ClearAsync(CancellationToken cancellationToken)
+    {
+      string error = null;
+      while (Top is { } page)
+      {
+        _entries.RemoveAt(_entries.Count - 1);
+        error = CombineErrors(error, await ExitAsync(page, cancellationToken));
+      }
+
+      return ToResult(error);
+    }
+
+    public void ClearImmediately()
+    {
+      for (var index = _entries.Count - 1; index >= 0; index--) _entries[index].Dispose();
+
+      _entries.Clear();
+    }
+
+    private static async UniTask<string> ResumeAsync(BasePage page, CancellationToken cancellationToken)
+    {
+      if (page == null) return null;
+
+      try
+      {
+        await page.OnResume(cancellationToken);
+        return null;
+      }
+      catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+      {
+        return $"Cannot resume {page.GetType().Name}: {exception}";
+      }
+    }
+
+    private static async UniTask<string> ExitAsync(BasePage page, CancellationToken cancellationToken)
+    {
+      try
+      {
+        await page.OnExit(cancellationToken);
+        return null;
+      }
+      catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+      {
+        return $"Cannot exit {page.GetType().Name}: {exception}";
+      }
+      finally
+      {
+        page.Dispose();
+      }
+    }
+
+    private static NavigationResult ToResult(string error)
+    {
+      return error == null
+        ? NavigationResult.Success()
+        : NavigationResult.Failure(NavigationStatus.LifecycleFailed, error);
+    }
+
+    private static string CombineErrors(string first, string second)
+    {
+      return first == null ? second : second == null ? first : first + " | " + second;
+    }
+  }
 }

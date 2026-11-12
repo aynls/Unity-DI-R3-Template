@@ -15,29 +15,18 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: c3b4c01962444ee40a3e5555c7a0a28c
   m_SerializeEntries:
-  - m_GUID: 1d8cc6d45c8e03d499d7fdb0b6489b86
-    m_Address: SettingsPagePrefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3ebaefdb976a96840b85e5b90a36a1a5
     m_Address: SFX_Click 001
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 451cb616355b3f34cac2652971dd1573
-    m_Address: LanguagePagePrefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 58210ed9389ba714c934e3e3f13a9f7c
-    m_Address: MainScenePrefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: fce424de75e44e34fb76074c4fa083e5, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: 52c218fd7ae53e94a8e85ded1b41c037, type: 2}
     - {fileID: 11400000, guid: 8c33fba991ca1e447a4a899f732a942f, type: 2}
+    m_SchemaDisplayOrder: []
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

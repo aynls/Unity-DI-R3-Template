@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Menu.uss" />
+    <ui:VisualElement class="menu-page">
+        <ui:Label name="languagePrompt" class="menu-prompt" />
+        <ui:VisualElement name="languageChoices" class="language-choices">
+            <ui:Button name="chinese" text="简体中文" focusable="false" class="menu-button font-chinese" />
+            <ui:Button name="english" text="English" focusable="false" class="menu-button font-english" />
+            <ui:Button name="japanese" text="日本語" focusable="false" class="menu-button font-japanese" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

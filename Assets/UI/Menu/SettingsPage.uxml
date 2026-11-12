@@ -1,0 +1,46 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:l="UnityEngine.Localization">
+    <Style src="Menu.uss"/>
+    <ui:VisualElement class="menu-page">
+        <ui:VisualElement class="settings-panel">
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="Resolution" class="setting-label">
+                    <Bindings>
+                        <l:LocalizedString property="text" table="Project Table" entry="Settings_Resolution"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:DropdownField name="resolution" class="setting-input"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="Full Screen" class="setting-label">
+                    <Bindings>
+                        <l:LocalizedString property="text" table="Project Table" entry="Settings_WindowMode"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:Toggle name="fullScreen" class="setting-input"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="Music Volume" class="setting-label">
+                    <Bindings>
+                        <l:LocalizedString property="text" table="Project Table" entry="Settings_BGMVolume"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:SliderInt name="musicVolume" low-value="0" high-value="100" class="setting-input"/>
+                <ui:Label name="musicValue" class="setting-value"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="Sound Effect Volume" class="setting-label">
+                    <Bindings>
+                        <l:LocalizedString property="text" table="Project Table" entry="Settings_SFXVolume"/>
+                    </Bindings>
+                </ui:Label>
+                <ui:SliderInt name="sfxVolume" low-value="0" high-value="100" class="setting-input"/>
+                <ui:Label name="sfxValue" class="setting-value"/>
+            </ui:VisualElement>
+            <ui:Button name="finish" text="Finish" focusable="false" class="menu-button">
+                <Bindings>
+                    <l:LocalizedString property="text" table="Project Table" entry="Finish"/>
+                </Bindings>
+            </ui:Button>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

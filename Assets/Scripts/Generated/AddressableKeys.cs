@@ -17,10 +17,7 @@ namespace Generated
 
         public static class Assets
         {
-            public const string LanguagePagePrefab = "LanguagePagePrefab";
-            public const string MainScenePrefab = "MainScenePrefab";
             public const string SFX_Click_001 = "SFX_Click 001";
-            public const string SettingsPagePrefab = "SettingsPagePrefab";
         }
     }
 }

@@ -1,200 +1,123 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Architecture;
 using Architecture.Data.Settings;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
-using Generated;
-using R3;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using VContainer;
+using UnityEngine.UIElements;
 
 namespace UI
 {
-    [RequireComponent(typeof(UIBinder), typeof(CanvasGroup), typeof(GraphicRaycaster))]
-    public sealed class LanguagePage : MonoBehaviour, IBasePage
+  public sealed class LanguagePage : BasePage
+  {
+    private readonly ILanguageService _language;
+    private readonly IPageNavigator _navigator;
+    private readonly ISettingsService _settings;
+    private Button _chinese;
+    private VisualElement _choices;
+    private Button _english;
+    private Button _japanese;
+
+    private Label _prompt;
+
+    public LanguagePage(ILanguageService language, ISettingsService settings, IPageNavigator navigator)
     {
-        [SerializeField] private TextMeshProUGUI languageText;
-        [SerializeField] private float fadeDuration = 0.5f;
-
-        [Inject] private ILanguageService _language;
-        [Inject] private ISettingsService _settings;
-        [Inject] private IPageNavigator _navigator;
-
-        private readonly List<LanguageButton> _languageButtons = new();
-        private UIBinder _uiBinder;
-        private CanvasGroup _canvasGroup;
-        private GraphicRaycaster _raycaster;
-        private bool _isApplying;
-
-        private void Awake()
-        {
-            _canvasGroup = GetComponent<CanvasGroup>();
-            _raycaster = GetComponent<GraphicRaycaster>();
-            _uiBinder = GetComponent<UIBinder>();
-            _canvasGroup.alpha = 0;
-
-            BindButton("Button_Chinese", GameLanguageType.Chinese);
-            BindButton("Button_English", GameLanguageType.English);
-            BindButton("Button_Japanese", GameLanguageType.Japanese);
-            UpdatePreview(_language.CurrentLanguage);
-        }
-
-        private void OnDestroy()
-        {
-            _canvasGroup?.DOKill();
-            foreach (var languageButton in _languageButtons)
-            {
-                if (languageButton != null)
-                {
-                    languageButton.Selected -= UpdatePreview;
-                }
-            }
-        }
-
-        private void BindButton(string id, GameLanguageType language)
-        {
-            var button = _uiBinder.Get<Button>(id);
-            button.OnClickAsObservable()
-                .Subscribe(_ => ApplyLanguageAndContinueAsync(language).Forget())
-                .AddTo(this);
-
-            var languageButton = button.GetComponent<LanguageButton>();
-            if (languageButton != null)
-            {
-                languageButton.Selected += UpdatePreview;
-                _languageButtons.Add(languageButton);
-            }
-        }
-
-        private async UniTask ApplyLanguageAndContinueAsync(GameLanguageType language)
-        {
-            if (_isApplying)
-            {
-                return;
-            }
-
-            _isApplying = true;
-            _raycaster.enabled = false;
-            var previousLanguage = _language.CurrentLanguage;
-            var cancellationToken = this.GetCancellationTokenOnDestroy();
-
-            try
-            {
-                var change = await _language.SetLanguageAsync(language, cancellationToken);
-                if (!change.IsSuccess)
-                {
-                    Debug.LogError($"[LanguagePage] Locale change failed: {change.Status}. {change.Error}");
-                    return;
-                }
-
-                var save = _settings.SetLanguage(language);
-                if (!save.IsSuccess)
-                {
-                    var rollback = await _language.SetLanguageAsync(previousLanguage, cancellationToken);
-                    Debug.LogError(
-                        $"[LanguagePage] Language setting save failed: {save.Error}. " +
-                        $"Locale rollback: {rollback.Status}.");
-                    return;
-                }
-
-                var navigation = await _navigator.ReplaceAsync<MainScenePage>(
-                    AddressableKeys.Assets.MainScenePrefab,
-                    cancellationToken);
-                if (!navigation.IsSuccess)
-                {
-                    Debug.LogError(
-                        $"[LanguagePage] Navigation failed: {navigation.Status}. {navigation.Error}");
-                }
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // Page teardown owns this cancellation.
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError($"[LanguagePage] Language selection failed unexpectedly.\n{exception}");
-            }
-            finally
-            {
-                _isApplying = false;
-                if (_raycaster != null)
-                {
-                    _raycaster.enabled = true;
-                }
-            }
-        }
-
-        private void UpdatePreview(GameLanguageType language)
-        {
-            languageText.text = language switch
-            {
-                GameLanguageType.Chinese => "这是正确的语言吗？",
-                GameLanguageType.English => "Is this the correct language?",
-                GameLanguageType.Japanese => "これは正しい言語ですか？",
-                _ => languageText.text
-            };
-        }
-
-        public async UniTask OnEnter(CancellationToken cancellationToken)
-        {
-            if (!_isApplying)
-            {
-                _raycaster.enabled = true;
-            }
-
-            await SetVisibleAsync(true, cancellationToken);
-        }
-
-        public async UniTask OnPause(CancellationToken cancellationToken)
-        {
-            _raycaster.enabled = false;
-            await SetVisibleAsync(false, cancellationToken);
-        }
-
-        public async UniTask OnResume(CancellationToken cancellationToken)
-        {
-            await SetVisibleAsync(true, cancellationToken);
-            if (!_isApplying)
-            {
-                _raycaster.enabled = true;
-            }
-        }
-
-        public async UniTask OnExit(CancellationToken cancellationToken)
-        {
-            _raycaster.enabled = false;
-            await SetVisibleAsync(false, cancellationToken);
-        }
-
-        private async UniTask SetVisibleAsync(bool visible, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var targetAlpha = visible ? 1f : 0f;
-            if (Mathf.Approximately(_canvasGroup.alpha, targetAlpha))
-            {
-                _canvasGroup.interactable = visible;
-                _canvasGroup.blocksRaycasts = visible;
-                return;
-            }
-
-            _canvasGroup.interactable = false;
-            _canvasGroup.blocksRaycasts = false;
-            var tween = _canvasGroup
-                .DOFade(targetAlpha, fadeDuration)
-                .SetTarget(_canvasGroup)
-                .SetEase(Ease.Linear)
-                .SetUpdate(true);
-            await tween.ToUniTask(cancellationToken: cancellationToken);
-
-            if (visible)
-            {
-                _canvasGroup.interactable = true;
-                _canvasGroup.blocksRaycasts = true;
-            }
-        }
+      _language = language;
+      _settings = settings;
+      _navigator = navigator;
     }
+
+    protected override void BindView()
+    {
+      _prompt = Element<Label>("languagePrompt");
+      _choices = Element<VisualElement>("languageChoices");
+      _chinese = Element<Button>("chinese");
+      _english = Element<Button>("english");
+      _japanese = Element<Button>("japanese");
+      _chinese.clicked += ChooseChinese;
+      _english.clicked += ChooseEnglish;
+      _japanese.clicked += ChooseJapanese;
+      UpdatePrompt(_language.CurrentLanguage);
+    }
+
+    public override UniTask OnPause(CancellationToken cancellationToken)
+    {
+      return FadeOutAsync(cancellationToken);
+    }
+
+    private void ChooseChinese()
+    {
+      Choose(GameLanguageType.Chinese);
+    }
+
+    private void ChooseEnglish()
+    {
+      Choose(GameLanguageType.English);
+    }
+
+    private void ChooseJapanese()
+    {
+      Choose(GameLanguageType.Japanese);
+    }
+
+    private void Choose(GameLanguageType language)
+    {
+      _choices.SetEnabled(false);
+      ApplyLanguageAsync(language, LifetimeToken).Forget(exception =>
+      {
+        if (exception is not OperationCanceledException)
+          Debug.LogError($"[LanguagePage] Could not apply {language}: {exception}");
+      });
+    }
+
+    private async UniTask ApplyLanguageAsync(GameLanguageType language, CancellationToken cancellationToken)
+    {
+      var previous = _language.CurrentLanguage;
+      try
+      {
+        var change = await _language.SetLanguageAsync(language, cancellationToken);
+        if (!change.IsSuccess)
+        {
+          Debug.LogError($"[LanguagePage] Locale change failed: {change.Status}. {change.Error}");
+          return;
+        }
+
+        var save = _settings.SetLanguage(language);
+        if (!save.IsSuccess)
+        {
+          var rollback = await _language.SetLanguageAsync(previous, cancellationToken);
+          Debug.LogError(
+            $"[LanguagePage] Language setting save failed: {save.Error}. Locale rollback: {rollback.Status}.");
+          return;
+        }
+
+        UpdatePrompt(language);
+        var navigation = await _navigator.ReplaceAsync<MainScenePage>(cancellationToken);
+        if (!navigation.IsSuccess)
+          Debug.LogError($"[LanguagePage] Navigation failed: {navigation.Status}. {navigation.Error}");
+      }
+      finally
+      {
+        if (!cancellationToken.IsCancellationRequested) _choices.SetEnabled(true);
+      }
+    }
+
+    private void UpdatePrompt(GameLanguageType language)
+    {
+      UIRoot.ApplyLanguage(_prompt, language);
+      _prompt.text = language switch
+      {
+        GameLanguageType.Chinese => "这是正确的语言吗？",
+        GameLanguageType.Japanese => "これは正しい言語ですか？",
+        _ => "Is this the correct language?"
+      };
+    }
+
+    protected override void ReleaseView()
+    {
+      if (_chinese != null) _chinese.clicked -= ChooseChinese;
+      if (_english != null) _english.clicked -= ChooseEnglish;
+      if (_japanese != null) _japanese.clicked -= ChooseJapanese;
+    }
+  }
 }
