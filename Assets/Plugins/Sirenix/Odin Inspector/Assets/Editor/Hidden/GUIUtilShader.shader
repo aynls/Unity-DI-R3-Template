@@ -1,4 +1,4 @@
-﻿Shader "Hidden/Sirenix/OdinGUIShader"
+Shader "Hidden/Sirenix/OdinGUIShader"
 {
     SubShader
     {

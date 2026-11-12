@@ -1,4 +1,4 @@
-﻿namespace Architecture
+namespace Architecture
 {
     public enum GameWindow
     {

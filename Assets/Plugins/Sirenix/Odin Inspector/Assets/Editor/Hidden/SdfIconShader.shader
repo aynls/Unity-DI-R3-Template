@@ -1,4 +1,4 @@
-﻿Shader "Hidden/Sirenix/SdfIconShader"
+Shader "Hidden/Sirenix/SdfIconShader"
 {
     SubShader
     {
