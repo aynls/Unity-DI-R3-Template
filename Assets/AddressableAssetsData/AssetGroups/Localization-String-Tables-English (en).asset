@@ -22,9 +22,13 @@ MonoBehaviour:
     - Locale-en
     - Preload
     FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: fce424de75e44e34fb76074c4fa083e5, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: 8ba1e086dc513a84d9a7b5fc69d2d659, type: 2}
     - {fileID: 11400000, guid: d5ad1291003533f48a96b1b74d1c4204, type: 2}
+    m_SchemaDisplayOrder: []
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

@@ -21,9 +21,13 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-ja
     FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: fce424de75e44e34fb76074c4fa083e5, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: 2e4b9a1010aba134993284102d3a5c11, type: 2}
     - {fileID: 11400000, guid: cc731e35d35a07a4c813993eb7ee5a15, type: 2}
+    m_SchemaDisplayOrder: []
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

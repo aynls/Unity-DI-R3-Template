@@ -21,9 +21,13 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-zh-Hans
     FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: fce424de75e44e34fb76074c4fa083e5, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: 3f0d45a1b620896429ac0221c2352155, type: 2}
     - {fileID: 11400000, guid: 7b08ea7165fc0de4c85b6f1e82c9e618, type: 2}
+    m_SchemaDisplayOrder: []
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

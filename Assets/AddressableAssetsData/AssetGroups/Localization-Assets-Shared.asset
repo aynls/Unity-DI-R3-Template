@@ -20,14 +20,19 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   - m_GUID: 9e12a5c59abd1014cbe352d3dc53e480
     m_Address: Assets/Settings/Localization/Table/Project Table Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+    m_FolderGuid: 
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: fce424de75e44e34fb76074c4fa083e5, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: d0fe9c845528e4b47949c2de09a7dd5a, type: 2}
     - {fileID: 11400000, guid: 9fc986b7a443608448d90c9dde896518, type: 2}
+    m_SchemaDisplayOrder: []
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1
